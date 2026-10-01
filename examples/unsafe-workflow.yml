@@ -1,0 +1,18 @@
+# A deliberately unsafe workflow used to demonstrate what the tool reports.
+# Do not copy this into a real repository.
+name: unsafe-demo
+
+on:
+  pull_request_target:
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker://alpine:3.20
+      - name: greet
+        run: |
+          echo "hello ${{ github.event.pull_request.title }}"
