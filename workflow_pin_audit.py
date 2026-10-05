@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # workflow_pin_audit reads GitHub Actions workflow files and reports supply chain
 # risks that a reviewer can act on. It is deliberately dependency free so it can
 # run inside any CI container with nothing but a Python interpreter.
