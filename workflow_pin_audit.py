@@ -57,7 +57,7 @@ SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 SKIP_DIRECTORIES = {".git", ".venv", "venv", "node_modules", "__pycache__", ".tox"}
 
 
-class Finding(object):
+class Finding:
     # One reported problem: where it is, which check raised it and the raw text.
     def __init__(self, file_path, line_number, check, evidence):
         self.file_path = file_path
@@ -222,7 +222,7 @@ def scan_paths(paths):
                 with open(workflow, "r", encoding="utf-8", errors="replace") as handle:
                     text = handle.read()
             except OSError as error:
-                print("cannot read %s: %s" % (workflow, error), file=sys.stderr)
+                print(f"cannot read {workflow}: {error}", file=sys.stderr)
                 return None, None
             scanned += 1
             findings.extend(scan_text(text, display_name(workflow, path)))
@@ -244,17 +244,17 @@ def print_report(findings, counts, scanned):
             if finding.file_path != current_file:
                 current_file = finding.file_path
                 print(current_file)
-            print("  %4d  %-6s  %s  %s" % (finding.line_number, finding.severity.upper(), finding.check, finding.message))
+            print(f"  {finding.line_number:4d}  {finding.severity.upper():<6}  {finding.check}  {finding.message}")
             if finding.evidence:
-                print("        %s" % finding.evidence)
+                print(f"        {finding.evidence}")
         print("")
-    print("%d findings in %d workflow files (%d high, %d medium, %d low)" % (counts["total"], scanned, counts["high"], counts["medium"], counts["low"]))
+    print(f"{counts['total']} findings in {scanned} workflow files ({counts['high']} high, {counts['medium']} medium, {counts['low']} low)")
 
 
 def list_checks():
     for check in sorted(CHECK_INFO):
         severity, message = CHECK_INFO[check]
-        print("%s  %-6s  %s" % (check, severity.upper(), message))
+        print(f"{check}  {severity.upper():<6}  {message}")
 
 
 def build_parser():
@@ -281,7 +281,7 @@ def main(argv=None):
     counts = summarise(findings)
 
     if not scanned:
-        print("no workflow files found under: %s" % ", ".join(paths), file=sys.stderr)
+        print(f"no workflow files found under: {', '.join(paths)}", file=sys.stderr)
         return 2
 
     if args.json:
