@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-# workflow_pin_audit reads GitHub Actions workflow files and reports supply chain
-# risks that a reviewer can act on. It is deliberately dependency free so it can
-# run inside any CI container with nothing but a Python interpreter.
+# workflow_pin_audit reads GitHub Actions workflow files and reports supply chain risks that a reviewer can act on.
+# It is deliberately dependency free so it can run inside any CI container with nothing but a Python interpreter.
 
 import argparse
 import json
@@ -21,9 +20,8 @@ CHECK_INFO = {
 
 SEVERITY_RANK = {"high": 3, "medium": 2, "low": 1}
 
-# Context values that a pull request author, issue author or dispatch caller can
-# set to arbitrary text. Interpolating them into a shell step lets that text run
-# as a command in the runner.
+# Context values that a pull request author, issue author or dispatch caller can set to arbitrary text.
+# Interpolating them into a shell step lets that text run as a command in the runner.
 UNTRUSTED_CONTEXTS = (
     "github.event.pull_request.title",
     "github.event.pull_request.body",
@@ -57,8 +55,8 @@ SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 SKIP_DIRECTORIES = {".git", ".venv", "venv", "node_modules", "__pycache__", ".tox"}
 
 
+# One reported problem: where it is, which check raised it and the raw text.
 class Finding:
-    # One reported problem: where it is, which check raised it and the raw text.
     def __init__(self, file_path, line_number, check, evidence):
         self.file_path = file_path
         self.line_number = line_number
@@ -78,9 +76,9 @@ class Finding:
         }
 
 
+# Workflow values are plain scalars in practice, so the first hash starts a comment.
+# This drops trailing notes such as a version marker after a SHA.
 def strip_comment(value):
-    # Workflow values are plain scalars in practice, so the first hash starts a
-    # comment. This drops trailing notes such as a version marker after a SHA.
     return value.split("#", 1)[0].strip()
 
 
@@ -88,10 +86,9 @@ def indent_of(line):
     return len(line) - len(line.lstrip(" "))
 
 
+# Returns the zero based indexes of every line that is the body of a run step.
+# A run key either carries an inline command or introduces a block scalar whose body sits on the more indented lines below it.
 def collect_run_block_lines(lines):
-    # Returns the zero based indexes of every line that is the body of a run
-    # step. A run key either carries an inline command or introduces a block
-    # scalar whose body sits on the more indented lines below it.
     in_block_indent = None
     block_lines = set()
     for index, line in enumerate(lines):
@@ -114,9 +111,8 @@ def collect_run_block_lines(lines):
     return block_lines
 
 
+# Returns the check id that applies to a uses value, or None when the reference is either local to the repository or immutably pinned.
 def classify_uses(ref):
-    # Returns the check id that applies to a uses value, or None when the
-    # reference is either local to the repository or immutably pinned.
     if not ref:
         return "WPA001"
     if ref.startswith("./") or ref.startswith("../"):
@@ -133,8 +129,8 @@ def classify_uses(ref):
     return "WPA001"
 
 
+# Scans one workflow file and returns findings ordered by line number.
 def scan_text(text, display_path):
-    # Scans one workflow file and returns findings ordered by line number.
     lines = text.splitlines()
     run_lines = collect_run_block_lines(lines)
     findings = []
@@ -185,9 +181,8 @@ def scan_text(text, display_path):
     return findings
 
 
+# Walks a directory tree and keeps only files inside a workflows folder so an unrelated compose or CI file elsewhere in the tree is not reported.
 def find_workflow_files(root):
-    # Walks a directory tree and keeps only files inside a workflows folder so
-    # an unrelated compose or CI file elsewhere in the tree is not reported.
     if os.path.isfile(root):
         return [root]
     found = []
@@ -203,8 +198,8 @@ def find_workflow_files(root):
     return sorted(found)
 
 
+# Prefer a path relative to the scan root so CI logs stay readable.
 def display_name(path, root):
-    # Prefer a path relative to the scan root so CI logs stay readable.
     if os.path.isdir(root):
         try:
             return os.path.relpath(path, root)
